@@ -50,7 +50,7 @@ class Config:
         self.working_folder = working_folder
         
         # ***** Define the mode that will be used when running the code *****
-        self.mode = 'evaluate' # 'train', 'evaluate' or 'build_data'
+        self.mode = 'build_data' # 'train', 'evaluate' or 'build_data'
         # Info that will be used as prefix of any output files
         self.info = 'crack_detection'
         # Dimensions of the images that will be fed to the network
