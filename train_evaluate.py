@@ -197,8 +197,11 @@ elif mode == 'evaluate':
     evalGen = HDF5DatasetGeneratorMask(args['EVAL_HDF5'], BS, aug=None, shuffle=False, binarize=args['binarize'])
     
     # Use the pretrained model to fenerate predictions for the input samples from a data generator
-    predictions = model.predict_generator(evalGen.generator(),
-                                          steps=evalGen.numImages // BS+1, max_queue_size=BS * 2, verbose=1)
+    predictions = model.predict(
+        evalGen.generator(),
+        steps=evalGen.num_steps()
+    )
+
 
     # Define folder where predictions will be stored
     predictions_folder = '{}{}/'.format(args['predictions'], args['pretrained_filename'])

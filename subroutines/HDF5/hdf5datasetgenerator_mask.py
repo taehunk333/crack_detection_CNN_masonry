@@ -54,9 +54,9 @@ Adrian Rosebrock, How to use Keras fit and fit_generator (a hands-on tutorial),
     accessed on 24 February 2021
 """
     
-# import the necessary packages
 import numpy as np
 import h5py
+import math
 
 class HDF5DatasetGeneratorMask:
     def __init__(self, dbPath, batchSize, preprocessors=None, shuffle=False,
@@ -110,9 +110,8 @@ class HDF5DatasetGeneratorMask:
                     # images
                     images = np.array(procImages)                
                 
-                # if the data augmenator exists, apply it
+                # if the data augmentor exists, apply it
                 if self.aug is not None:
-                    
                     # perform the same transformation to image and mask
                     seed = 2018
                     
@@ -133,7 +132,9 @@ class HDF5DatasetGeneratorMask:
             # increment the total number of epochs
             epochs += 1
 
+    def num_steps(self):
+        return math.ceil(self.numImages / self.batchSize)
+
     def close(self):
         # close the database
-        self.db.close()  
-		
+        self.db.close()

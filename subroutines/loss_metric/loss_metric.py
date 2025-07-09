@@ -245,9 +245,9 @@ def Recall_np(y_true, y_pred, threshold=0.5):
     y_pred = K.cast(y_pred, 'float32')
     
     eps = 1e-07
-    y_true_f = y_true.flatten().astype('float32')
+    y_true_f = y_true.numpy().flatten().astype('float32')
     half = (np.ones(y_true_f.shape)*threshold).astype('float32')
-    y_pred_f = np.greater(y_pred.flatten(),half).astype('float32')
+    y_pred_f = np.greater(np.array(y_pred).flatten(), half).astype('float32')
     true_positives = (y_true_f * y_pred_f).sum()
     possible_positives = y_true_f.sum()
     recall = (true_positives + eps) / (possible_positives + eps)
@@ -258,9 +258,9 @@ def Precision_np(y_true, y_pred, threshold=0.5):
     y_pred = K.cast(y_pred, 'float32')
     
     eps = 1e-07
-    y_true_f = y_true.flatten().astype('float32')
+    y_true_f = y_true.numpy().flatten().astype('float32')
     half = (np.ones(y_true_f.shape)*threshold).astype('float32')
-    y_pred_f = np.greater(y_pred.flatten(),half).astype('float32')
+    y_pred_f = np.greater(np.array(y_pred).flatten(), half).astype('float32')
     true_positives = (y_true_f * y_pred_f).sum()
     predicted_positives = y_pred_f.sum()
     precision = (true_positives + eps) / (predicted_positives + eps)

@@ -40,8 +40,22 @@ YouTube Channel: https://www.youtube.com/channel/UCuSdAarhISVQzV2GhxaErsg
 Your feedback is welcome. Feel free to reach out to explore any options for collaboration.
 """
 
+import os
 import sys
 from tensorflow.keras.models import model_from_json
+
+# Import custom losses and metrics
+from subroutines.loss_metric.loss_metric import (
+    Weighted_Cross_Entropy,
+    Focal_Loss,
+    F1_score_Loss,
+    F1_score_Loss_dil,
+    Recall,
+    Precision,
+    Precision_dil,
+    F1_score,
+    F1_score_dil
+)
 
 class LoadModel:
     def __init__(self, args, IMAGE_DIMS, BS):
@@ -51,49 +65,58 @@ class LoadModel:
 
     def load_pretrained_model(self):
         """
-        Load a pretrained model
+        Load a pretrained model by building the architecture in code and loading weights.
+        JSON loading is NOT supported for models with custom losses/metrics.
         """
-        
-        # Load pretrained DeepCrack
-        if self.args["model"] == 'DeepCrack':
-            
-            sys.path.append(self.args["main"] + 'networks/')
+
+        model_name = self.args["model"]
+        networks_path = os.path.join(self.args["main"], 'networks')
+        sys.path.append(networks_path)
+
+        if model_name == 'Unet':
+            from Unet import Unet  # Capital U matches Unet.py
+
+            model = Unet(
+                IMAGE_DIMS=(self.IMAGE_DIMS[0], self.IMAGE_DIMS[1], self.IMAGE_DIMS[2]),
+                n_filters=self.args.get('N_FILTERS', 64),
+                kernel_initializer=self.args.get('init', 'he_normal'),
+                dropout=self.args.get('dropout'),
+                batchnorm=self.args.get('batchnorm', True),
+                regularization=self.args.get('regularization')
+            )
+
+
+            weights_path = os.path.join(self.args['weights'], self.args['pretrained_filename'])
+            model.load_weights(weights_path)
+
+        elif model_name == 'DeepCrack':
             from edeepcrack_cls import Deepcrack
 
             model = Deepcrack(input_shape=(self.BS, self.IMAGE_DIMS[0], self.IMAGE_DIMS[1], self.IMAGE_DIMS[2]))
+            weights_path = os.path.join(self.args['weights'], self.args['pretrained_filename'])
+            model.load_weights(weights_path)
 
-            # load weights into new model
-            model.load_weights(self.args['weights'] + self.args['pretrained_filename'])
+        elif model_name == 'Deeplabv3':
+            from model import Deeplabv3
 
-        # Load pretrained model
-        # This option is not supported for the current version of the code for the 'evaluation' mode
-        # Print an explanatory comment and exit
-        elif self.args['save_model_weights'] == 'model':
-            
-            raise ValueError("The option to load a model is not supported for the 'evaluation' mode." +
-                  "In case you need to use the pretraine model to perform predictions, then" +
-                  "train the model with the option: args['save_model_weights'] == 'weights'" +
-                  "\nThe analysis will be terminated")
-                
-        # Load model from JSON file and then load pretrained weights
+            model = Deeplabv3(input_shape=(self.BS, self.IMAGE_DIMS[0], self.IMAGE_DIMS[1], self.IMAGE_DIMS[2]))
+            weights_path = os.path.join(self.args['weights'], self.args['pretrained_filename'])
+            model.load_weights(weights_path)
+
+        elif model_name == 'MyCrackNet':
+            from mycracknet import MyCrackNet
+
+            model = MyCrackNet(input_shape=(self.BS, self.IMAGE_DIMS[0], self.IMAGE_DIMS[1], self.IMAGE_DIMS[2]))
+            weights_path = os.path.join(self.args['weights'], self.args['pretrained_filename'])
+            model.load_weights(weights_path)
+
+        elif self.args.get('save_model_weights') == 'model':
+            raise ValueError(
+                "Loading full model from JSON is not supported in 'evaluation' mode.\n"
+                "Use weights loading mode instead by setting args['save_model_weights'] == 'weights'."
+            )
+
         else:
-            
-            # If pretrained Deeplabv3 will be loaded, import the Deeplabv3 module
-            if self.args["model"] == 'Deeplabv3':            
-                sys.path.append(self.args["main"] + 'networks/')
-                from model import Deeplabv3  
+            raise NotImplementedError(f"Model loading not supported for model '{model_name}'.")
 
-            # load json and create model
-            json_file = open(self.args['model_json'], 'r')
-            loaded_model_json = json_file.read()
-            json_file.close()
-            try:
-                model = model_from_json(loaded_model_json)
-            except:
-                from tensorflow.keras.models import model_from_json
-                model = model_from_json(loaded_model_json)
-        
-            # load weights into new model
-            model.load_weights(self.args['weights'] + self.args['pretrained_filename'])
-        
         return model
