@@ -136,6 +136,6 @@ class Network:
             import tensorflow as tf
             self.opt = tf.keras.optimizers.Adam(self.INIT_LR)
    
-        model.compile(optimizer=self.opt, loss=self.loss, metrics=[self.metrics])
+        model.compile(optimizer=self.opt, loss=self.loss, metrics=self.metrics)
         
         return model

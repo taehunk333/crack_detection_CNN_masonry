@@ -53,13 +53,13 @@ Adrian Rosebrock, Keras: Starting, stopping, and resuming training,
 """
 
 # import the necessary packages
-from keras.callbacks import BaseLogger
+from tensorflow.keras.callbacks import Callback
 import matplotlib.pyplot as plt
 import numpy as np
 import json
 import os
 
-class TrainingMonitor(BaseLogger):
+class TrainingMonitor(Callback):
     def __init__(self, figPath, jsonPath=None, startAt=0, metric = "accuracy"):
         # store the output path for the figure, the path to the JSON
         # serialized file, and the starting epoch

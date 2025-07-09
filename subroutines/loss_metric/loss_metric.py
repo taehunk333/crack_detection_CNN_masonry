@@ -42,7 +42,7 @@ Your feedback is welcome. Feel free to reach out to explore any options for coll
 
 #%%
 
-import keras.backend as K
+from tensorflow.keras import backend as K
 import tensorflow as tf
 import numpy as np
 import cv2
@@ -56,15 +56,26 @@ import cv2
 #
 
 def dilation2d(img4D):
-
-    # The greater the kernel size, the greater extent of the dilation applied
+    img4D = tf.cast(img4D, tf.float32)
     kernel_size = 5
-    
-    with tf.compat.v1.variable_scope('dilation2d'):
-        kernel = tf.zeros((kernel_size, kernel_size, 1)) 
-        output4D = tf.nn.dilation2d(img4D, filter=kernel, strides=(1,1,1,1), rates=(1,1,1,1), padding="SAME")
+    kernel = tf.ones((kernel_size, kernel_size, 1), dtype=tf.float32)
 
-        return output4D
+    # Expand kernel shape to match 3D filters (filter_height, filter_width, depth)
+    kernel = tf.reshape(kernel, (kernel_size, kernel_size, 1))
+
+    # Perform dilation using morphological operations via max pooling (workaround)
+    return tf.nn.pool(
+        input=img4D,
+        window_shape=(kernel_size, kernel_size),
+        pooling_type='MAX',
+        strides=(1, 1),
+        padding='SAME',
+        data_format='NHWC'
+    )
+
+
+
+
 
 #%%
 # Weighted Cross-Entropy (WCE) Loss
@@ -92,34 +103,32 @@ def Weighted_Cross_Entropy(beta):
 # https://github.com/umbertogriffo/focal-loss-keras
 #
 
-def Focal_Loss(gamma=2., alpha=.25):
+def Focal_Loss(gamma=2., alpha=0.25):
     """
-    Binary form of focal loss.
-      FL(p_t) = -alpha * (1 - p_t)**gamma * log(p_t)
-      where p = sigmoid(x), p_t = p or 1 - p depending on if the label is 1 or 0, respectively.
-    References:
-        https://arxiv.org/pdf/1708.02002.pdf
-    Usage:
-     model.compile(loss=[binary_focal_loss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
+    Binary focal loss for binary classification.
+    FL(p_t) = -alpha * (1 - p_t)^gamma * log(p_t)
+    where p_t is the model’s estimated probability for the true class.
+    
+    Args:
+        gamma (float): focusing parameter to reduce the relative loss for well-classified examples.
+        alpha (float): balancing factor between classes.
+        
+    Returns:
+        loss function to be used in model.compile
     """
-    def binary_focal_loss_fixed(y_true, y_pred):
-        """
-        :param y_true: A tensor of the same shape as `y_pred`
-        :param y_pred:  A tensor resulting from a sigmoid
-        :return: Output tensor.
-        """
-        pt_1 = tf.where(tf.equal(y_true, 1), y_pred, tf.ones_like(y_pred))
-        pt_0 = tf.where(tf.equal(y_true, 0), y_pred, tf.zeros_like(y_pred))
-
-        epsilon = K.epsilon()
-        # Clip to prevent NaN's and Inf's
-        pt_1 = K.clip(pt_1, epsilon, 1. - epsilon)
-        pt_0 = K.clip(pt_0, epsilon, 1. - epsilon)
-
-        return -K.sum(alpha * K.pow(1. - pt_1, gamma) * K.log(pt_1)) \
-               -K.sum((1 - alpha) * K.pow(pt_0, gamma) * K.log(1. - pt_0))
-
-    return binary_focal_loss_fixed
+    def focal_loss_fixed(y_true, y_pred):
+        y_true = K.cast(y_true, tf.float32)
+        y_pred = K.clip(y_pred, K.epsilon(), 1. - K.epsilon())
+        
+        # pt = predicted probability of the true class
+        pt = tf.where(K.equal(y_true, 1), y_pred, 1 - y_pred)
+        
+        # compute focal loss
+        loss = -alpha * K.pow(1. - pt, gamma) * K.log(pt)
+        
+        return K.mean(loss)
+    
+    return focal_loss_fixed
 
 #%%
 # F1-score Loss
@@ -156,6 +165,8 @@ def F1_score_Loss_dil(y_true, y_pred):
 #
 
 def Recall(y_true, y_pred):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
     recall = true_positives / (possible_positives + K.epsilon())
@@ -166,6 +177,8 @@ def Recall(y_true, y_pred):
 #
 
 def Precision(y_true, y_pred):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
     precision = true_positives / (predicted_positives + K.epsilon())
@@ -176,6 +189,8 @@ def Precision(y_true, y_pred):
 #
 
 def Precision_dil(y_true, y_pred):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     
     # Dilate y_true
     y_true = dilation2d(y_true)
@@ -190,6 +205,8 @@ def Precision_dil(y_true, y_pred):
 #
 
 def F1_score(y_true, y_pred):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     precision = Precision(y_true, y_pred)
     recall = Recall(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
@@ -199,6 +216,8 @@ def F1_score(y_true, y_pred):
 #
 
 def F1_score_dil(y_true, y_pred):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     precision = Precision_dil(y_true, y_pred)
     recall = Recall(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
@@ -222,6 +241,8 @@ def DilateMask(mask, threshold=0.5, iterations=1):
     return mask_dilated
 	
 def Recall_np(y_true, y_pred, threshold=0.5):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     
     eps = 1e-07
     y_true_f = y_true.flatten().astype('float32')
@@ -233,6 +254,8 @@ def Recall_np(y_true, y_pred, threshold=0.5):
     return recall
 
 def Precision_np(y_true, y_pred, threshold=0.5):
+    y_true = K.cast(y_true, 'float32')
+    y_pred = K.cast(y_pred, 'float32')
     
     eps = 1e-07
     y_true_f = y_true.flatten().astype('float32')

@@ -1,17 +1,21 @@
-name: pypetal_311
+name: crack_310
 channels:
   - conda-forge
   - defaults
-  - bioconda
 dependencies:
-  - python>=3.12
-  - numpy>=2.0.0
+  - python=3.10
+  - numpy>=1.24
   - h5py>=3.9.0
   - progressbar
   - imutils
   - scikit-image
   - ipython
-  - numpy
   - scikit-learn
+  - keras
+  - graphviz
   - pip
-
+  - pip:
+      - tensorflow
+      - keras-preprocessing
+      - pydot
+      - graphviz

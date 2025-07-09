@@ -40,11 +40,11 @@ YouTube Channel: https://www.youtube.com/channel/UCuSdAarhISVQzV2GhxaErsg
 Your feedback is welcome. Feel free to reach out to explore any options for collaboration.
 """
 
-import keras
-from keras.regularizers import l2
+import tensorflow.keras as keras
+from tensorflow.keras.regularizers import l2
 import os
 import tempfile
-from keras.models import model_from_json
+from tensorflow.keras.models import model_from_json
 
 def add_regularization(model, regularization):
     """

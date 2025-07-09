@@ -41,7 +41,7 @@ Your feedback is welcome. Feel free to reach out to explore any options for coll
 """
 
 import sys
-from keras.models import model_from_json
+from tensorflow.keras.models import model_from_json
 
 class LoadModel:
     def __init__(self, args, IMAGE_DIMS, BS):

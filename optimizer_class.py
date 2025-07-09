@@ -52,15 +52,15 @@ class Optimizer:
         sys.path.append(self.args["main"])
 
         if self.args['opt'] == 'Adam':
-            from keras.optimizers import Adam
+            from tensorflow.keras.optimizers import Adam
             opt = Adam(self.INIT_LR)
             
         elif self.args['opt'] == 'SGD':
-            from keras.optimizers import SGD
+            from tensorflow.keras.optimizers import SGD
             opt = SGD(self.INIT_LR)
             
         elif self.args['opt'] == 'RMSprop':
-            from keras.optimizers import RMSprop
+            from tensorflow.keras.optimizers import RMSprop
             opt = RMSprop(self.INIT_LR)
             
         return opt

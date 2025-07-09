@@ -40,32 +40,22 @@ YouTube Channel: https://www.youtube.com/channel/UCuSdAarhISVQzV2GhxaErsg
 Your feedback is welcome. Feel free to reach out to explore any options for collaboration.
 """
 
-import sys
-import keras
+import tensorflow as tf
+from tensorflow.keras.metrics import BinaryAccuracy, MeanMetricWrapper
+
+from subroutines.loss_metric.loss_metric import Recall, Precision, Precision_dil, F1_score, F1_score_dil
 
 class Metrics:
     def __init__(self, args):
         self.args = args
-        
-    def define_Metrics(self): 
-        
-        sys.path.append(self.args["main"])
 
-        from subroutines.loss_metric import Recall
-        from subroutines.loss_metric import Precision
-        from subroutines.loss_metric import Precision_dil
-        from subroutines.loss_metric import F1_score
-        from subroutines.loss_metric import F1_score_dil
+    def define_Metrics(self):
+        return [
+            BinaryAccuracy(name='accuracy'),
+            MeanMetricWrapper(Recall, name='Recall'),
+            MeanMetricWrapper(Precision, name='Precision'),
+            MeanMetricWrapper(Precision_dil, name='Precision_dil'),
+            MeanMetricWrapper(F1_score, name='F1_score'),
+            MeanMetricWrapper(F1_score_dil, name='F1_score_dil'),
+        ]
 
-        # Prepare metrics
-        metrics = [
-                keras.metrics.BinaryAccuracy(name='accuracy'),
-                Recall,
-                Precision,
-                Precision_dil,
-                F1_score,
-                F1_score_dil
-                ]
-
-        return metrics
-        

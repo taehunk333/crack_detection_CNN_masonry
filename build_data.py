@@ -44,7 +44,7 @@ import os
 
 folder = {}
 # Use this to easily run the code in different directories/devices
-folder['initial'] = 'C:/Users/jimar/Dimitris/python/'
+folder['initial'] = '/Users/tk/Documents/GitHub/'
 # The path where the repository is stored
 folder['main'] = folder['initial'] + 'crack_detection_CNN_masonry/'
 
@@ -72,6 +72,14 @@ import progressbar
 import cv2
 
 from subroutines.HDF5 import HDF5DatasetWriterMask
+
+def normalize_extensions(folder):
+    for f in os.listdir(folder):
+        base, ext = os.path.splitext(f)
+        os.rename(os.path.join(folder, f), os.path.join(folder, base + ext.lower()))
+
+normalize_extensions(args['images'])
+normalize_extensions(args['masks'])
 
 # grab the paths to the images and masks
 trainPaths = list(paths.list_images(args['images']))

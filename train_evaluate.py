@@ -44,7 +44,7 @@ import os
 
 folder = {}
 # Use this to easily run the code in different directories/devices
-folder['initial'] = 'C:/Users/jimar/Dimitris/python/'
+folder['initial'] = '/Users/tk/Documents/GitHub/'
 # The path where the repository is stored
 folder['main'] = folder['initial'] + 'crack_detection_CNN_masonry/'
 
@@ -80,9 +80,9 @@ from subroutines.HDF5 import HDF5DatasetGeneratorMask
   
 if mode == 'train':
 
-    from keras.preprocessing.image import ImageDataGenerator
-    from keras.callbacks import ModelCheckpoint
-    from keras.callbacks import CSVLogger
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    from tensorflow.keras.callbacks import ModelCheckpoint
+    from tensorflow.keras.callbacks import CSVLogger
     
     from subroutines.callbacks import EpochCheckpoint
     from subroutines.callbacks import TrainingMonitor
@@ -148,7 +148,7 @@ if mode == 'train':
     # https://keras.io/api/callbacks/model_checkpoint/
     
     temp = '{}_{}'.format(info, args['counter']) + "_epoch_{epoch}_" + \
-            args['metric_to_plot'] + "_{val_" + args['metric_to_plot'] +":.3f}.h5"
+            args['metric_to_plot'] + "_{val_" + args['metric_to_plot'] +":.3f}.weights.h5"
     
     if args['save_model_weights'] == 'model':
         ModelCheckpoint_file = args["checkpoints"] + temp
@@ -177,13 +177,12 @@ if mode == 'train':
     # Train the network
     #
     
-    H = model.fit_generator(
+    H = model.fit(
         trainGen.generator(),
         steps_per_epoch=trainGen.numImages // BS,
         validation_data=valGen.generator(),
         validation_steps=valGen.numImages // BS,
         epochs=epochs,
-        max_queue_size=BS * 2,
         callbacks=callbacks, verbose=1)
 
 #%%

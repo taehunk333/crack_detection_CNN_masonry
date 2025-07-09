@@ -53,7 +53,7 @@ Adrian Rosebrock, Keras: Starting, stopping, and resuming training,
 """
 
 # import the necessary packages
-from keras.callbacks import Callback
+from tensorflow.keras.callbacks import Callback
 import os
 
 class EpochCheckpoint(Callback):
@@ -86,12 +86,13 @@ class EpochCheckpoint(Callback):
 				folder_output = self.outputPath_weights
 				
             # define the name of saved model/weights
-			if self.info=='':
-			    p = os.path.sep.join([folder_output,
-    				"{}_epoch_{}{}".format(self.counter, self.intEpoch + 1, self.extension)])
+			if self.info == '':
+				p = os.path.sep.join([folder_output,
+					"{}_epoch_{}.weights{}".format(self.counter, self.intEpoch + 1, self.extension)])
 			else:
-			    p = os.path.sep.join([folder_output,
-    				"{}_{}_epoch_{}{}".format(self.info, self.counter, self.intEpoch + 1, self.extension)])
+				p = os.path.sep.join([folder_output,
+					"{}_{}_epoch_{}.weights{}".format(self.info, self.counter, self.intEpoch + 1, self.extension)])
+
 
 			# check whether to save the whole model or only the weight
 			if self.save_model_weights == 'model':

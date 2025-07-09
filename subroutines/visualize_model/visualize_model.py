@@ -58,7 +58,7 @@ def visualize_model(model, folder_plot, folder_summary):
     plot the model to png
     """
     
-    from keras.utils import plot_model
+    from tensorflow.keras.utils import plot_model
     
     plot_model(model, to_file=folder_plot, show_shapes=True)
     model_summary(model, folder_summary)
