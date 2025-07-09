@@ -157,7 +157,7 @@ class Config:
             os.makedirs(folder_path)
 
     def set_repository(self):
-        
+    
         # Pass the path where the repository is stored to the args
         self.args['main'] = self.working_folder
         # Where the dataset is stored
@@ -177,7 +177,7 @@ class Config:
         
         # Create the folders
         folders = [self.args['hdf5'], self.args['checkpoints'], self.args['weights'], 
-                   self.args['model_json_folder'], self.args['predictions']]
+                self.args['model_json_folder'], self.args['predictions']]
         for f in (folders):
             self.check_folder_exists(f)
 
@@ -194,59 +194,43 @@ class Config:
         # Define the path that the patches of images and masks are stored
         self.args['images'] = self.args['dataset'] + '{}_{}_images/'.format(self.info, self.IMAGE_DIMS[0])
         self.args['masks'] = self.args['dataset'] +'{}_{}_masks/'.format(self.info, self.IMAGE_DIMS[0])
-    
-        # Diffent configurations when mode is 'train' or evaluate'
+
+        # Different configurations when mode is 'train' or 'evaluate'
         if self.mode == 'train':
 
-            # When running different trials, the output files will not overwrite the existing ones
-            # The output files of each trial will have a different suffix
-            #
-            # Check in the output folder if there is a  file named 'counter.txt'
-            # The file should contain only a number that will be used as counter 
-            # If the counter file doesn't exist, use the os.getpid() as counter
-            
             # Path to the counter file
             self.args['counter_file'] = self.args['output'] + 'counter.txt'
             
             # If 'counter.txt' exists read the counter
             if os.path.exists(self.args['counter_file']):
                 # Ask whether to change counter. acceptable answers are 'y' or 'n'
-                # If anything else is given as input, ask again
                 while True:
                     self.args['counter_check'] = input('Shall I change the counter [y/n]:')
-                    if self.args['counter_check'] == 'y' or self.args['counter_check'] == 'n':
+                    if self.args['counter_check'] in ['y', 'n']:
                         break
-                    else:
-                        continue
                 
-                # If input was 'y', change the counter   
                 if self.args['counter_check'] == 'y':
-                    file = open(self.args['counter_file'], 'r') 
-                    self.args['counter'] = int(file.read())+1
-                    file.close()
-                    file = open(self.args['counter_file'], 'w') 
-                    file.write(str(self.args['counter'])) 
-                    file.close()
-                # If input was 'n', use the same counter   
+                    with open(self.args['counter_file'], 'r') as file:
+                        self.args['counter'] = int(file.read()) + 1
+                    with open(self.args['counter_file'], 'w') as file:
+                        file.write(str(self.args['counter']))
                 else:
-                    file = open(self.args['counter_file'], 'r') 
-                    self.args['counter'] = int(file.read())
-                    file.close()
-                    
-            # If the counter file doesn't exist, use the os.getpid() as counter
+                    with open(self.args['counter_file'], 'r') as file:
+                        self.args['counter'] = int(file.read())
             else:
+                # If the counter file doesn't exist, use the os.getpid() as counter
                 self.args['counter'] = os.getpid()
-            
+                # Create the counter.txt file with this initial counter
+                with open(self.args['counter_file'], 'w') as file:
+                    file.write(str(self.args['counter']))
+
             # Print the counter
             print(self.args['counter'])
             
             # Store results (i.e. metrics, loss) to CSV format
-            # Check if the counter value was used before
-            # If it was used before ask the user whether to proceed
-            # If 'n' is passed, the analysis will be terminated
             self.args['CSV_PATH'] = self.args['output'] + '{}_{}.out'.format(self.info, self.args['counter'])
             if os.path.exists(self.args['CSV_PATH']):
-                print("The counter '{}' has been used before\nShould the analysis continue [y/n]:".format(self.args['counter']))
+                print(f"The counter '{self.args['counter']}' has been used before\nShould the analysis continue [y/n]:")
                 check = input()
                 if check == 'n':
                     print('The analysis will be terminated')
@@ -255,7 +239,6 @@ class Config:
             # Plot Loss/Metrics during training
             self.args['FIG_PATH'] = self.args['output'] + self.info + '_{}.png'.format(self.args['counter'])
             # Serialize results (i.e. metrics, loss) to JSON
-            # If None is given, no serialization will take place
             self.args['JSON_PATH'] = self.args['output'] + self.info + '_{}.json'.format(self.args['counter'])
             # Plot the architecture of the network
             self.args['architecture'] = self.args['output'] + '{}_architecture_{}.png'.format(self.info, self.args['counter'])
@@ -267,19 +250,14 @@ class Config:
             # Define the counter suitably in order to read the correct JSON file etc.
             self.args['counter'] = 6
             # Define the file with the pretrained weights or the model with weights that will be used to evaluate model
-            # e.g. 'crack detection_1_epoch_7_F1_score_dil_0.762.h5'
             self.args['pretrained_filename'] = 'crack_detection_6_epoch_9_F1_score_dil_0.809.h5'
             # Define the subfolder where predictions will be stored
             self.args['predictions_subfolder'] = '{}{}/'.format(self.args['predictions'], self.args['pretrained_filename'])
             # Define whether to dilate ground truth mask for the calculation of Precision metric
-            # Background pixels predicted as cracks (FP) are considered as TP if they are a few 
-            # pixels apart from the annotated cracks. Refer to the Journal paper for extra clarification                 
-            self.args['predictions_dilate'] = True # True or False
+            self.args['predictions_dilate'] = True 
             
         # Configurations to be used both for 'training' and 'evaluation' modes
-        if (self.mode == 'train') or (self.mode == 'evaluate'):
-            
-            # The path for the serialized model to JSON
+        if self.mode in ['train', 'evaluate']:
             self.args['model_json'] = self.args['model_json_folder'] + self.info + '_{}.json'.format(self.args['counter']) 
-        
+
         return self.args
