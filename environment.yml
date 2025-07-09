@@ -1,0 +1,17 @@
+name: pypetal_311
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python>=3.12
+  - numpy>=2.0.0
+  - h5py>=3.9.0
+  - progressbar
+  - imutils
+  - scikit-image
+  - ipython
+  - numpy
+  - scikit-learn
+  - pip
+
