@@ -1,6 +1,10 @@
 # Patches
 
-Harded coded parts in the code
+1. Added environment.yml file to keep track of different packages and libraries required for the project
+
+2. Overhauled config_class.py, build_data.py, and train_evaluate.py, along with other python scripts, so that the code functions with Python version 3.10.
+
+3. Harded coded parts in the code
 - build_data.py
     - line 47: update the base path
         - Be careful to use "\\" for Windows, not "/" or "\"
