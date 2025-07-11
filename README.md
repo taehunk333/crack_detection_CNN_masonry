@@ -1,3 +1,17 @@
+# Patches
+
+Harded coded parts in the code
+- build_data.py
+    - line 47: update the base path
+        - Be careful to use "\\" for Windows, not "/" or "\"
+- train_evaluate.py
+    - line 47: update the base path
+        - Be careful to use "\\" for Windows, not "/" or "\"
+- config_class.py
+    - Lines that need to be updated in the code for evaluation
+        - line 251: update with the number from counter.txt inside the output folder, once the training finishes.
+        - line 253: inside the output/weights folder, choose the file name and update the file name.
+
 # Crack detection for masonry surfaces
 This GitHub Repository was produced to share material relevant to the Journal paper **[Automatic crack classification and segmentation on masonry surfaces using convolutional neural networks and transfer learning](https://doi.org/10.1016/j.autcon.2021.103606)** by **[D. Dais](https://www.researchgate.net/profile/Dimitris-Dais)**,  **İ. E. Bal**, **E. Smyrou**, and **V. Sarhosis** published in **Automation in Construction**.  
 
